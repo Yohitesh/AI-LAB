@@ -121,3 +121,24 @@ def play_game():
 
 if __name__ == "__main__":
     play_game() 
+
+
+OUTPUT:
+
+O |   | X
+---------
+X | O | X
+---------
+  |   | O
+
+AI wins!
+Total cost= 8
+
+X | O | X
+---------
+O | O | X
+---------
+X | X | O
+
+It's a draw!
+Total cost= 9
