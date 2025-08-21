@@ -142,3 +142,12 @@ X | X | O
 
 It's a draw!
 Total cost= 9
+
+X | O | 
+---------
+X | O | 
+---------
+X |   | 
+
+Player wins!
+Total cost= 5
