@@ -122,3 +122,86 @@ Step 3:
 [4, 5, 6]
 [7, 8, 0]
 ----------
+
+class Node:
+    def __init__(self, name):
+        self.name = name
+        self.children = []
+
+    def add_child(self, child_node):
+        self.children.append(child_node)
+
+    def __repr__(self):
+        return self.name
+
+def depth_limited_search(node, goal, limit, path):
+    """
+    Performs a Depth-Limited Search (DLS) from the given node.
+    """
+    path.append(node.name)
+
+    if node.name == goal:
+        return path
+
+    if limit == 0:
+        path.pop() # Backtrack
+        return None
+
+    for child in node.children:
+        result = depth_limited_search(child, goal, limit - 1, path)
+        if result:
+            return result
+    
+    path.pop() # Backtrack
+    return None
+
+def iterative_deepening_dfs(root, goal, max_depth=10):
+    """
+    Performs an Iterative Deepening Depth-First Search (IDDFS).
+    """
+    for depth in range(max_depth + 1):
+        print(f"Searching with depth limit: {depth}")
+        path = []
+        result = depth_limited_search(root, goal, depth, path)
+        if result:
+            return result
+    return None
+
+# Construct the tree
+A = Node('A')
+B = Node('B')
+C = Node('C')
+D = Node('D')
+E = Node('E')
+F = Node('F')
+G = Node('G')
+H = Node('H')
+I = Node('I')
+
+A.add_child(B)
+A.add_child(C)
+
+B.add_child(D)
+B.add_child(E)
+
+C.add_child(F)
+C.add_child(G)
+
+D.add_child(H)
+
+E.add_child(I)
+
+# Solve using IDDFS
+goal_node_name = 'G'
+path_to_goal = iterative_deepening_dfs(A, goal_node_name)
+
+if path_to_goal:
+    print(f"Path to '{goal_node_name}': {' -> '.join(path_to_goal)}")
+else:
+    print(f"'{goal_node_name}' not found within the maximum depth.")
+
+OUTPUT:
+Searching with depth limit: 0
+Searching with depth limit: 1
+Searching with depth limit: 2
+Path to 'G': A -> B -> D -> E -> C -> F -> G
