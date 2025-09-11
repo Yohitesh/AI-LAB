@@ -1,0 +1,124 @@
+# Solving 8 puzzle using IDDFS
+
+import copy
+
+class PuzzleState:
+    def __init__(self, board, parent=None, move=None, depth=0):
+        self.board = board  # The 3x3 puzzle board as a list of lists
+        self.parent = parent  # Reference to the parent state
+        self.move = move  # The move that led to this state (e.g., 'Up', 'Down')
+        self.depth = depth  # Depth of this state in the search tree
+
+    def __eq__(self, other):
+        return self.board == other.board
+
+    def __hash__(self):
+        return hash(str(self.board))
+
+    def get_blank_position(self):
+        for r in range(3):
+            for c in range(3):
+                if self.board[r][c] == 0:
+                    return r, c
+
+    def get_successors(self):
+        successors = []
+        r_blank, c_blank = self.get_blank_position()
+
+        moves = {
+            'Up': (-1, 0),
+            'Down': (1, 0),
+            'Left': (0, -1),
+            'Right': (0, 1)
+        }
+
+        for move_name, (dr, dc) in moves.items():
+            new_r, new_c = r_blank + dr, c_blank + dc
+
+            if 0 <= new_r < 3 and 0 <= new_c < 3:
+                new_board = copy.deepcopy(self.board)
+                new_board[r_blank][c_blank], new_board[new_r][new_c] = \
+                    new_board[new_r][new_c], new_board[r_blank][c_blank]
+                successors.append(PuzzleState(new_board, self, move_name, self.depth + 1))
+        return successors
+
+def depth_limited_search(start_state, goal_state, limit):
+    stack = [(start_state, [start_state.board])]  # (state, path_boards)
+    
+    while stack:
+        current_state, current_path_boards = stack.pop()
+
+        if current_state.board == goal_state.board:
+            return current_path_boards  # Solution found
+
+        if current_state.depth < limit:
+            for successor in reversed(current_state.get_successors()): # Reverse for DFS order
+                if successor.board not in current_path_boards: # Avoid cycles in current path
+                    stack.append((successor, current_path_boards + [successor.board]))
+    return None
+
+def iddfs(initial_board, goal_board, max_depth=20):
+    initial_state = PuzzleState(initial_board)
+    goal_state = PuzzleState(goal_board)
+
+    for depth_limit in range(max_depth + 1):
+        print(f"Searching with depth limit: {depth_limit}")
+        solution_path = depth_limited_search(initial_state, goal_state, depth_limit)
+        if solution_path:
+            return solution_path
+    return None
+
+def print_solution(path):
+    if path:
+        print("Solution Found:")
+        for i, board_state in enumerate(path):
+            print(f"Step {i}:")
+            for row in board_state:
+                print(row)
+            print("-" * 10)
+    else:
+        print("No solution found within the maximum depth.")
+
+if __name__ == "__main__":
+    initial_board = [
+        [1, 0, 2],
+        [4, 5, 3],
+        [7, 8, 6]
+    ]
+
+    goal_board = [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 0]
+    ]
+
+    solution = iddfs(initial_board, goal_board)
+    print_solution(solution)
+
+OUTPUT:
+
+Searching with depth limit: 0
+Searching with depth limit: 1
+Searching with depth limit: 2
+Searching with depth limit: 3
+Solution Found:
+Step 0:
+[1, 0, 2]
+[4, 5, 3]
+[7, 8, 6]
+----------
+Step 1:
+[1, 2, 0]
+[4, 5, 3]
+[7, 8, 6]
+----------
+Step 2:
+[1, 2, 3]
+[4, 5, 0]
+[7, 8, 6]
+----------
+Step 3:
+[1, 2, 3]
+[4, 5, 6]
+[7, 8, 0]
+----------
