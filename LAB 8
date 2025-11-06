@@ -1,0 +1,94 @@
+# Q11: Forward reasoning (Forward Chaining) in FOL simplified to propositional logic
+
+# Knowledge Base
+facts = {"Man(Marcus)", "Pompeian(Marcus)"}
+
+rules = [
+    ("Pompeian(x)", "Roman(x)"),
+    ("Roman(x)", "Loyal(x)"),
+    ("Man(x)", "Person(x)"),
+    ("Person(x)", "Mortal(x)")
+]
+
+query = "Mortal(Marcus)"
+
+def substitute(rule, var, const):
+    """Replace variable with constant in a rule."""
+    premise, conclusion = rule
+    return premise.replace(var, const), conclusion.replace(var, const)
+
+def forward_chain():
+    print("Forward Chaining Proof: KB ⊢ Mortal(Marcus)\n")
+    derived = set(facts)
+    new_inferred = True
+
+    while new_inferred:
+        new_inferred = False
+        for rule in rules:
+            premise, conclusion = substitute(rule, "x", "Marcus")
+            if premise in derived and conclusion not in derived:
+                print(f"From {premise} and {rule[0]}→{rule[1]}, infer {conclusion}")
+                derived.add(conclusion)
+                new_inferred = True
+
+    print("\nAll inferred facts:")
+    for f in derived:
+        print(" -", f)
+
+    if query in derived:
+        print(f"\n✅ Query proved: {query} is TRUE.")
+    else:
+        print(f"\n❌ Query cannot be proved from the KB.")
+
+forward_chain()
+
+# ============================================================
+# GENERAL PYTHON CODE: Convert any First-Order Logic (FOL) statement to CNF
+# Requires: sympy (install using: pip install sympy)
+# ============================================================
+
+from sympy import symbols, Function, Not, Or, And, Implies, Equivalent
+from sympy.logic.boolalg import to_cnf
+from sympy.abc import x, y, z
+
+# ------------------------------------------------------------
+# 1️⃣ Define helper function to print CNF conversion
+# ------------------------------------------------------------
+def convert_to_cnf(expression):
+    print("=== FOL → CNF Converter ===\n")
+    print(f"Original Expression:\n  {expression}\n")
+   
+    # Step 1: Eliminate implications (→) and equivalences (↔)
+    no_imp = expression.replace(Implies, lambda a, b: Or(Not(a), b))
+    no_equiv = no_imp.replace(Equivalent, lambda a, b: And(Implies(a,b), Implies(b,a)))
+    print(f"Step 1 - After removing → and ↔:\n  {no_equiv}\n")
+
+    # Step 2: Move NOT inwards (De Morgan + double negation)
+    print("Step 2 - Moving negations inward (handled automatically by CNF conversion)\n")
+
+    # Step 3: Convert to Conjunctive Normal Form
+    cnf_expr = to_cnf(no_equiv, simplify=True)
+    print(f"✅ Final CNF Expression:\n  {cnf_expr}\n")
+
+    return cnf_expr
+
+# ------------------------------------------------------------
+# 2️⃣ Example usage: You can modify this section freely
+# ------------------------------------------------------------
+if __name__ == "__main__":
+    # Define predicate symbols or logical atoms
+    P = Function('P')
+    Q = Function('Q')
+    R = Function('R')
+
+    # Example 1: simple propositional form
+    expr1 = Implies(P(x), Q(x))  # P(x) → Q(x)
+    convert_to_cnf(expr1)
+
+    # Example 2: a more complex FOL-style formula
+    expr2 = Implies(And(P(x), Implies(Q(x), R(x))), R(x))
+    convert_to_cnf(expr2)
+
+    # Example 3: with OR, AND, and NOT
+    expr3 = Or(Not(P(x)), And(Q(x), R(x)))
+    convert_to_cnf(expr3)
